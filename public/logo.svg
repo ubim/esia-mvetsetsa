@@ -1,0 +1,11 @@
+<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Three horizontal bars representing environmental layers -->
+  <!-- Longest bar (top) -->
+  <rect x="50" y="50" width="400" height="80" fill="#0D3B66" rx="2"/>
+  
+  <!-- Medium bar (middle) -->
+  <rect x="50" y="160" width="330" height="80" fill="#0D3B66" rx="2"/>
+  
+  <!-- Shortest bar (bottom) -->
+  <rect x="50" y="270" width="260" height="80" fill="#0D3B66" rx="2"/>
+</svg>

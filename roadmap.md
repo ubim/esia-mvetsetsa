@@ -1,0 +1,11 @@
+# Roadmap
+- [x] Upload ESIA doc, translate to Chichewa, community summary
+- [x] Export PDF / Word
+- [x] Mobile-first layout
+- [x] Android Studio project setup (Capacitor)
+- [x] Share to community space + community feedback with in-app alerts
+- [x] Community space (/community) with offline reading of saved documents
+- [x] Finish shared Home / Community / Feedback / History menu and history saving
+- [x] Add community document search and anonymous feedback tab
+- [x] Verify navigation, anonymous feedback and phone layouts
+- [ ] Verify a new AI translation saves into History end-to-end — blocked by depleted AI credits
