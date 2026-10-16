@@ -53,6 +53,7 @@ async function translateToChichewa(text: string): Promise<string> {
 
 /**
  * FREE Summarization using advanced extractive algorithm
+ * Creates longer, more detailed summaries
  */
 function summarizeToChichewa(text: string): string {
   // Extract key sentences using TF-IDF-like scoring
@@ -95,7 +96,8 @@ function summarizeToChichewa(text: string): string {
     
     // Environmental keywords bonus
     const envKeywords = ['environmental', 'impact', 'assessment', 'community', 'project', 
-                        'water', 'air', 'pollution', 'wildlife', 'mitigation'];
+                        'water', 'air', 'pollution', 'wildlife', 'mitigation', 'chakudya',
+                        'madzi', 'mpweya', 'chilengedwe', 'anthu', 'ntchito', 'malo'];
     const hasEnvKeyword = sentenceWords.some(w => envKeywords.includes(w));
     const keywordBonus = hasEnvKeyword ? 1.3 : 1.0;
     
@@ -106,19 +108,32 @@ function summarizeToChichewa(text: string): string {
     };
   });
 
-  // Get top 8 sentences
+  // Get top 15-20 sentences for a comprehensive summary
+  const numSentences = Math.min(Math.max(15, Math.floor(sentences.length * 0.3)), 20);
   const topSentences = scored
     .sort((a, b) => b.score - a.score)
-    .slice(0, 8)
+    .slice(0, numSentences)
     .sort((a, b) => a.index - b.index)
     .map(s => s.sentence);
 
-  // Create structured Chichewa summary
-  const summary = `CHIDULE CHA LIPOTI (Summary)
+  // Create structured Chichewa summary with more detail
+  const summary = `CHIDULE CHA LIPOTI LA CHILENGEDWE (Detailed Summary)
+
+═══════════════════════════════════════════════════════════
 
 ${topSentences.join(' ')}
 
-Onani: Ichi ndi chidule chongochokera m'nkhani za m'lipotili. Kuti mudziwe zambiri, werengani lipoti lonse.`;
+═══════════════════════════════════════════════════════════
+
+ZOCHITIKA ZOFUNIKA (Key Points):
+
+${topSentences.slice(0, 5).map((s, i) => `${i + 1}. ${s}`).join('\n\n')}
+
+═══════════════════════════════════════════════════════════
+
+CHISONYEZERO: Ichi ndi chidule chokwanira kuti mudziwe za lipotili. Kuti mudziwe zambiri, werengani lipoti lonse lomwe lamasuliridwa pamwambapa.
+
+NOTANI: Chidule chimenechichi chochokera m'nkhani yonse yomwe yamasuliridwa ku Chichewa kuti muthe kumvetsetsa bwino.`;
 
   return summary;
 }

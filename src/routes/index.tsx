@@ -23,7 +23,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Phase = "idle" | "reading" | "summary" | "translating" | "done";
+type Phase = "idle" | "reading" | "translating" | "summary" | "done";
 
 function Index() {
   const run = useServerFn(processText);
@@ -61,18 +61,42 @@ function Index() {
       let chunks = chunkText(text);
       if (!fullDoc) chunks = chunks.slice(0, 3);
       setTotal(chunks.length);
+      
+      // TRANSLATE FIRST (with parallel processing for speed)
+      setPhase("translating");
+      setTab("full"); // Show translation tab
+      
+      // Process chunks in batches of 3 for faster translation
+      const batchSize = 3;
+      for (let i = 0; i < chunks.length; i += batchSize) {
+        if (stopRef.current) break;
+        
+        const batch = chunks.slice(i, i + batchSize);
+        const promises = batch.map(chunk => 
+          run({ data: { text: chunk, mode: "translate" } })
+        );
+        
+        const results = await Promise.all(promises);
+        
+        for (const r of results) {
+          completedParts.push(r.text);
+          setParts((p) => [...p, r.text]);
+        }
+      }
+      
+      // NOW CREATE SUMMARY from translated text
       setPhase("summary");
-      setTab("summary");
-      const s = await run({ data: { text: text.slice(0, 38000), mode: "summary" } });
+      setTab("summary"); // Show summary tab
+      const fullTranslation = completedParts.join("\n\n");
+      const s = await run({ 
+        data: { 
+          text: fullTranslation.slice(0, 38000), 
+          mode: "summary" 
+        } 
+      });
       completedSummary = s.text;
       setSummary(s.text);
-      setPhase("translating");
-      for (const c of chunks) {
-        if (stopRef.current) break;
-        const r = await run({ data: { text: c, mode: "translate" } });
-        completedParts.push(r.text);
-        setParts((p) => [...p, r.text]);
-      }
+      
       setPhase("done");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -187,10 +211,10 @@ function Index() {
               <div className="flex items-center gap-2 text-sm font-medium">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
                 {phase === "reading" && "Reading document…"}
-                {phase === "summary" && "Writing community summary…"}
-                {phase === "translating" && `Translating section ${Math.min(parts.length + 1, total)} of ${total}…`}
+                {phase === "translating" && `Translating section ${Math.min(parts.length + 1, total)} of ${total}… (Fast mode: 3x speed)`}
+                {phase === "summary" && "Creating detailed summary from translated text…"}
               </div>
-              <Progress value={phase === "translating" ? pct : 5} />
+              <Progress value={phase === "translating" ? pct : phase === "summary" ? 95 : 5} />
             </div>
           )}
           {error && <p className="mt-4 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">{error}</p>}
